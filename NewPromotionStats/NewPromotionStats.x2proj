@@ -8,6 +8,9 @@
     <AssemblyName>NewPromotionStats</AssemblyName>
     <RootNamespace>NewPromotionStats</RootNamespace>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Folder Include="Config\" />
     <Folder Include="Localization\" />
@@ -22,6 +25,9 @@
     <Content Include="Config\XComEngine.ini" />
     <Content Include="Config\XComGame.ini" />
     <Content Include="Localization\XComGame.int" />
+    <Content Include="Src\NewPromotionStats\Classes\UIHeroPromotionStats.uc">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Src\NewPromotionStats\Classes\UIScreenListener_PromotionHero.uc">
       <SubType>Content</SubType>
     </Content>

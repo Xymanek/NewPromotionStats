@@ -1,32 +1,77 @@
 class UIScreenListener_PromotionHero extends UIScreenListener;
 
-const PANEL_NAME = 'NewPromotionStats';
-
-// This event is triggered after a screen is initialized
-event OnInit(UIScreen Screen);
-
-// This event is triggered after a screen receives focus
-event OnReceiveFocus(UIScreen Screen);
-
-// This event is triggered after a screen loses focus
-event OnLoseFocus(UIScreen Screen);
-
-// This event is triggered when a screen is removed
-event OnRemoved(UIScreen Screen);
-
-simulated function UIAvengerHUD GetHUD()
-{
-	return `HQPRES.m_kAvengerHUD;
-}
-
-simulated function AddIfCorrectScreen(UIScreen Screen)
+event OnInit(UIScreen Screen)
 {
 	local UIArmory_PromotionHero PromotionScreen;
+	local UIHeroPromotionStats Stats;
 
 	PromotionScreen = UIArmory_PromotionHero(Screen);
 	if (PromotionScreen == none) return;
 
-	if (PromotionScreen.GetChildByName(PANEL_NAME, false) != none) return;
+	Stats = GetOrCreateStats();
+	Stats.Show();
+	Stats.PopulateData(PromotionScreen.GetUnitRef());
 
+	SkipAnimateInOnInit = false;
+}
 
+event OnReceiveFocus(UIScreen Screen)
+{
+	local UIArmory_PromotionHero PromotionScreen;
+	local UIHeroPromotionStats Stats;
+	
+	PromotionScreen = UIArmory_PromotionHero(Screen);
+	if (PromotionScreen == none) return;
+
+	Stats = GetOrCreateStats();
+	Stats.Show();
+}
+
+event OnLoseFocus(UIScreen Screen)
+{
+	local UIArmory_PromotionHero PromotionScreen;
+	local UIHeroPromotionStats Stats;
+	
+	PromotionScreen = UIArmory_PromotionHero(Screen);
+	if (PromotionScreen == none) return;
+
+	Stats = GetOrCreateStats();
+	Stats.Hide();
+}
+
+event OnRemoved(UIScreen Screen)
+{
+	local UIArmory_PromotionHero PromotionScreen;
+	local UIHeroPromotionStats Stats;
+	
+	PromotionScreen = UIArmory_PromotionHero(Screen);
+	if (PromotionScreen == none) return;
+
+	Stats = GetOrCreateStats();
+	Stats.Hide();
+}
+
+simulated static function UIHeroPromotionStats GetOrCreateStats()
+{
+	local UIHeroPromotionStats Stats;
+	local UIAvengerHUD HUD;
+	local UIPanel Panel;
+
+	HUD = `HQPRES.m_kAvengerHUD;
+	Panel = HUD.GetChildByName(class'UIHeroPromotionStats'.default.MCName, false);
+	Stats = UIHeroPromotionStats(Panel);
+
+	if (Stats == none && Panel != none)
+	{
+		// Dunno how this happened
+		Panel.Remove();
+	}
+
+	if (Stats == none)
+	{
+		Stats = HUD.Spawn(class'UIHeroPromotionStats', HUD);
+		Stats.InitPanel();
+	}
+
+	return Stats;
 }
