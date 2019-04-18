@@ -10,9 +10,9 @@ event OnInit(UIScreen Screen)
 
 	Stats = GetOrCreateStats();
 	Stats.Show();
-	Stats.PopulateData(PromotionScreen.GetUnitRef());
 
-	SkipAnimateInOnInit = false;
+	Stats.PopulateData(PromotionScreen.GetUnitRef());
+	Stats.AnimateIn();
 }
 
 event OnReceiveFocus(UIScreen Screen)
