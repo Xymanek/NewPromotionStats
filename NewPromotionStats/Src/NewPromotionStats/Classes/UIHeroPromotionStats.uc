@@ -10,7 +10,7 @@ simulated function UIPanel InitPanel(optional name InitName, optional name InitL
 {
 	super.InitPanel(InitName, InitLibID);
 
-	SetPosition(1415, 620);
+	SetX(1415);
 	SetWidth(240);
 
 	BG = Spawn(class'UIPanel', self);
@@ -38,7 +38,12 @@ simulated function PopulateData(StateObjectReference InUnitRef)
 
 	StatsList.RefreshData(GetStats(), false);
 	BG.SetHeight(StatsList.Y + StatsList.Height + 20);
+	SetY(GetUnit().IsGravelyInjured() ? 150 : 620);
 }
+
+////////////
+/// Data ///
+////////////
 
 simulated function array<UISummary_ItemStat> GetStats()
 {
@@ -55,59 +60,93 @@ simulated function array<UISummary_ItemStat> GetStats()
 	}
 
 	StatsEntry.Label = class'UISoldierHeader'.default.m_strHealthLabel;
-	StatsEntry.Value = string(int(Unit.GetCurrentStat(eStat_HP)) + Unit.GetUIStatFromAbilities(eStat_HP));
+	StatsEntry.Value = GetCurrentAndMax(eStat_HP);
+	StatsEntry.ValueState = EUIState(Unit.GetStatusUIState());
 	Stats.AddItem(StatsEntry);
 
 	StatsEntry.Label = class'UISoldierHeader'.default.m_strWillLabel;
-	StatsEntry.Value = string(int(Unit.GetCurrentStat(eStat_Will)) + Unit.GetUIStatFromAbilities(eStat_Will)) $ "/" $ string(int(Unit.GetMaxStat(eStat_Will)));
+	StatsEntry.Value = GetCurrentAndMax(eStat_Will);
+	StatsEntry.ValueState = Unit.GetMentalStateUIState();
 	Stats.AddItem(StatsEntry);
 
 	StatsEntry.Label = class'UISoldierHeader'.default.m_strAimLabel;
-	StatsEntry.Value = string(int(Unit.GetCurrentStat(eStat_Offense)) + Unit.GetUIStatFromAbilities(eStat_Offense));
+	StatsEntry.Value = GetCurrent(eStat_Offense);
+	StatsEntry.ValueState = eUIState_Normal;
 	Stats.AddItem(StatsEntry);
 
 	StatsEntry.Label = class'UISoldierHeader'.default.m_strMobilityLabel;
-	StatsEntry.Value = string(int(Unit.GetCurrentStat(eStat_Mobility)) + Unit.GetUIStatFromAbilities(eStat_Mobility));
+	StatsEntry.Value = GetCurrent(eStat_Mobility);
 	Stats.AddItem(StatsEntry);
 
 	StatsEntry.Label = class'UISoldierHeader'.default.m_strTechLabel;
-	StatsEntry.Value = string(int(Unit.GetCurrentStat(eStat_Hacking)) + Unit.GetUIStatFromAbilities(eStat_Hacking));
+	StatsEntry.Value = GetCurrent(eStat_Hacking);
 	Stats.AddItem(StatsEntry);
 
 	StatsEntry.Label = class'UISoldierHeader'.default.m_strArmorLabel;
-	StatsEntry.Value = string(int(Unit.GetCurrentStat(eStat_ArmorMitigation)) + Unit.GetUIStatFromAbilities(eStat_ArmorMitigation));
+	StatsEntry.Value = GetCurrent(eStat_ArmorMitigation);
 	Stats.AddItem(StatsEntry);
 
 	StatsEntry.Label = class'UISoldierHeader'.default.m_strDodgeLabel;
-	StatsEntry.Value = string(int(Unit.GetCurrentStat(eStat_Dodge)) + Unit.GetUIStatFromAbilities(eStat_Dodge));
+	StatsEntry.Value = GetCurrent(eStat_Dodge);
+	Stats.AddItem(StatsEntry);
+
+	StatsEntry.Label = class'XLocalizedData'.default.DefenseLabel;
+	StatsEntry.Value = GetCurrent(eStat_Defense);
 	Stats.AddItem(StatsEntry);
 
 	StatsEntry.Label = class'UISoldierHeader'.default.m_strPsiLabel;
-	StatsEntry.Value = string(int(Unit.GetCurrentStat(eStat_PsiOffense)) + Unit.GetUIStatFromAbilities(eStat_PsiOffense));
+	StatsEntry.Value = GetCurrent(eStat_PsiOffense);
 	Stats.AddItem(StatsEntry);
-
-	/*StatsEntry.Label = class'UISoldierHeader'.default.m_strAimLabel;
-	StatsEntry.Value = "4";
-	Stats.AddItem(StatsEntry);
-
-	StatsEntry.Label = class'UISoldierHeader'.default.m_strAimLabel;
-	StatsEntry.Value = "4";
-	Stats.AddItem(StatsEntry);
-
-	StatsEntry.Label = class'UISoldierHeader'.default.m_strAimLabel;
-	StatsEntry.Value = "4";
-	Stats.AddItem(StatsEntry);
-
-	StatsEntry.Label = class'UISoldierHeader'.default.m_strAimLabel;
-	StatsEntry.Value = "4";
-	Stats.AddItem(StatsEntry);
-
-	StatsEntry.Label = class'UISoldierHeader'.default.m_strAimLabel;
-	StatsEntry.Value = "4";
-	Stats.AddItem(StatsEntry);*/
 
 	return Stats;
 }
+
+simulated function string GetCurrentOnly(ECharStatType Stat)
+{
+	local XComGameState_Unit Unit;
+	
+	Unit = GetUnit();
+
+	return string(int(Unit.GetCurrentStat(Stat)) + Unit.GetUIStatFromAbilities(Stat));
+}
+
+simulated function string GetCurrent(ECharStatType Stat)
+{
+	return GetCurrentOnly(Stat) $ GetEquipmentBonus(Stat);
+}
+
+simulated function string GetCurrentAndMax(ECharStatType Stat)
+{
+	return GetCurrentOnly(Stat) $ "/" $ string(int(GetUnit().GetMaxStat(Stat))) $ GetEquipmentBonus(Stat);
+}
+
+simulated function string GetEquipmentBonus(ECharStatType Stat)
+{
+	local int Bonus;
+
+	Bonus = GetUnit().GetUIStatFromInventory(Stat);
+
+	if (Bonus > 0)
+	{
+		 return class'UIUtilities_Text'.static.GetColoredText("+" $ string(Bonus), eUIState_Good);
+	}
+
+	if (Bonus < 0)
+	{
+		return class'UIUtilities_Text'.static.GetColoredText(string(Bonus), eUIState_Bad);
+	}
+
+	return "";
+}
+
+simulated function XComGameState_Unit GetUnit()
+{
+	return XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID(UnitRef.ObjectID));
+}
+
+/////////////////
+/// Animation ///
+/////////////////
 
 simulated function AnimateIn(optional float Delay = 0)
 {
