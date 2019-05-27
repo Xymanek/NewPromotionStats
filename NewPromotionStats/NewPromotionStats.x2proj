@@ -19,6 +19,9 @@
     <Folder Include="Src\NewPromotionStats\Classes\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Config\XComUI.ini">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="ReadMe.txt" />
     <Content Include="ModPreview.jpg" />
     <Content Include="Config\XComEditor.ini" />
@@ -31,7 +34,6 @@
     <Content Include="Src\NewPromotionStats\Classes\UIScreenListener_PromotionHero.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\NewPromotionStats\Classes\X2DownloadableContentInfo_NewPromotionStats.uc" />
   </ItemGroup>
   <Import Project="$(MSBuildLocalExtensionPath)\XCOM2.targets" />
 </Project>

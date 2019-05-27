@@ -1,16 +1,39 @@
-class UIHeroPromotionStats extends UIPanel;
+class UIHeroPromotionStats extends UIPanel config(UI);
+
+struct StatsPositionProfile
+{
+	var name ProfileName;
+	var bool IgnoreWoundedIfTall;
+
+	var Vector2D Healthy;
+	var Vector2D GravelyWounded;
+
+	structdefaultproperties
+	{
+		IgnoreWoundedIfTall = true
+	}
+};
+
+struct StatsDisplayMapping
+{
+	var name ScreenClass;
+	var name PositionProfile;
+};
+
+var config array<StatsPositionProfile> PositionProfiles;
+var config array<StatsDisplayMapping> DisplayMappings;
 
 var UIPanel BG;
 var UIX2PanelHeader Header;
 var UIStatList StatsList;
 
 var protectedwrite StateObjectReference UnitRef;
+var protectedwrite name PositionProfile;
 
 simulated function UIPanel InitPanel(optional name InitName, optional name InitLibID)
 {
 	super.InitPanel(InitName, InitLibID);
 
-	SetX(1415);
 	SetWidth(240);
 
 	BG = Spawn(class'UIPanel', self);
@@ -32,13 +55,94 @@ simulated function UIPanel InitPanel(optional name InitName, optional name InitL
 	return self;
 }
 
-simulated function PopulateData(StateObjectReference InUnitRef)
+simulated function OnScreenStackChanged()
 {
-	UnitRef = InUnitRef;
+	FetchUnitFromTopmostArmory();
+	FetchCurrentPositionProfile();
 
-	StatsList.RefreshData(GetStats(), false);
-	BG.SetHeight(StatsList.Y + StatsList.Height + 20);
-	SetY(GetUnit().IsGravelyInjured() ? 150 : 620);
+	if (UnitRef.ObjectID == 0 || PositionProfile == '')
+	{
+		Hide();
+	}
+	else
+	{
+		StatsList.RefreshData(GetStats(), false);
+		
+		BG.SetHeight(StatsList.Y + StatsList.Height + 20);
+		UpdatePositionFromProfile();
+
+		AnimateIn();
+		Show();
+	}
+}
+
+simulated protected function FetchUnitFromTopmostArmory()
+{
+	local UIScreen CurrentScreen;
+	local UIArmory Armory;
+
+	UnitRef.ObjectID = 0;
+
+	foreach `SCREENSTACK.Screens(CurrentScreen)
+	{
+		Armory = UIArmory(CurrentScreen);
+
+		if (Armory != none)
+		{
+			UnitRef = Armory.UnitReference;
+			break;
+		}
+	}
+}
+
+simulated protected function FetchCurrentPositionProfile()
+{
+	local StatsDisplayMapping Mapping;
+	local UIScreen CurrentScreen;
+	local name ClassName;
+	local int i;
+
+	CurrentScreen = `SCREENSTACK.GetCurrentScreen();
+
+	foreach DisplayMappings(Mapping)
+	{
+		if (CurrentScreen.IsA(Mapping.ScreenClass))
+		{
+			PositionProfile = Mapping.PositionProfile;
+
+			if (PositionProfiles.Find('ProfileName', PositionProfile) == INDEX_NONE)
+			{
+				`RedScreen("UIHeroPromotionStats mapping for" @ Mapping.ScreenClass @ "uses" @ PositionProfile @ "which does not exist");
+				PositionProfile = '';
+			}
+
+			return;
+		}
+	}
+
+	PositionProfile = '';
+}
+
+simulated protected function UpdatePositionFromProfile()
+{
+	local StatsPositionProfile Profile;
+	local XComGameState_Unit Unit;
+	local Vector2D Position;
+
+	Profile = PositionProfiles[PositionProfiles.Find('ProfileName', PositionProfile)];
+	Unit = GetUnit();
+
+	// Better check: try Pawn.GetHeadLocation(), and compare it to the Pawn.Location
+	if (!Unit.IsGravelyInjured() || (Profile.IgnoreWoundedIfTall && Unit.GetMyTemplate().UnitHeight > 2))
+	{
+		Position = Profile.Healthy;
+	}
+	else
+	{
+		Position = Profile.GravelyWounded;
+	}
+
+	SetPosition(Position.X, Position.Y);
 }
 
 ////////////

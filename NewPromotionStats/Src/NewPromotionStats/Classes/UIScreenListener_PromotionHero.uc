@@ -2,53 +2,30 @@ class UIScreenListener_PromotionHero extends UIScreenListener;
 
 event OnInit(UIScreen Screen)
 {
-	local UIArmory_PromotionHero PromotionScreen;
-	local UIHeroPromotionStats Stats;
-
-	PromotionScreen = UIArmory_PromotionHero(Screen);
-	if (PromotionScreen == none) return;
-
-	Stats = GetOrCreateStats();
-	Stats.Show();
-
-	Stats.PopulateData(PromotionScreen.GetUnitRef());
-	Stats.AnimateIn();
+	HandleEvent(Screen);
 }
 
 event OnReceiveFocus(UIScreen Screen)
 {
-	local UIArmory_PromotionHero PromotionScreen;
-	local UIHeroPromotionStats Stats;
-	
-	PromotionScreen = UIArmory_PromotionHero(Screen);
-	if (PromotionScreen == none) return;
-
-	Stats = GetOrCreateStats();
-	Stats.Show();
+	HandleEvent(Screen);
 }
 
 event OnLoseFocus(UIScreen Screen)
 {
-	local UIArmory_PromotionHero PromotionScreen;
-	local UIHeroPromotionStats Stats;
-	
-	PromotionScreen = UIArmory_PromotionHero(Screen);
-	if (PromotionScreen == none) return;
-
-	Stats = GetOrCreateStats();
-	Stats.Hide();
+	HandleEvent(Screen);
 }
 
 event OnRemoved(UIScreen Screen)
 {
-	local UIArmory_PromotionHero PromotionScreen;
-	local UIHeroPromotionStats Stats;
-	
-	PromotionScreen = UIArmory_PromotionHero(Screen);
-	if (PromotionScreen == none) return;
+	HandleEvent(Screen);
+}
 
-	Stats = GetOrCreateStats();
-	Stats.Hide();
+simulated static function HandleEvent(UIScreen Screen)
+{
+	if (IsScreenRelevant(Screen))
+	{
+		GetOrCreateStats().OnScreenStackChanged();
+	}
 }
 
 simulated static function UIHeroPromotionStats GetOrCreateStats()
@@ -74,4 +51,17 @@ simulated static function UIHeroPromotionStats GetOrCreateStats()
 	}
 
 	return Stats;
+}
+
+static function bool IsScreenRelevant(UIScreen Screen)
+{
+	local XComHQPresentationLayer HQPres;
+
+	HQPres = `HQPRES;
+
+	if (HQPres == none) return false; // Not strategy
+	if (Screen == HQPres.m_kAvengerHUD) return false;
+
+	// It will handle internally if it should be actually displayed or not
+	return true;
 }
