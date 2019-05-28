@@ -22,7 +22,7 @@ event OnRemoved(UIScreen Screen)
 
 simulated static function HandleEvent(UIScreen Screen)
 {
-	if (IsScreenRelevant(Screen))
+	if (IsStrategyAndReady())
 	{
 		GetOrCreateStats().OnScreenStackChanged();
 	}
@@ -53,15 +53,15 @@ simulated static function UIHeroPromotionStats GetOrCreateStats()
 	return Stats;
 }
 
-static function bool IsScreenRelevant(UIScreen Screen)
+static function bool IsStrategyAndReady()
 {
 	local XComHQPresentationLayer HQPres;
 
 	HQPres = `HQPRES;
 
-	if (HQPres == none) return false; // Not strategy
-	if (Screen == HQPres.m_kAvengerHUD) return false;
+	if (HQPres == none) return false;
+	if (HQPres.m_kAvengerHUD == none) return false;
+	if (!HQPres.m_kAvengerHUD.bIsInited) return false;
 
-	// It will handle internally if it should be actually displayed or not
 	return true;
 }
