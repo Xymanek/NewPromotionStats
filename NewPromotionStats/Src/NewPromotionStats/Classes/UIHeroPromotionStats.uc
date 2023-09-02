@@ -184,22 +184,27 @@ simulated function array<UISummary_ItemStat> GetStats()
 
 	StatsEntry.Label = class'UISoldierHeader'.default.m_strTechLabel;
 	StatsEntry.Value = GetCurrent(eStat_Hacking);
+	StatsEntry.ValueStyle = eUITextStyle_Tooltip_AbilityRight; // Prevent that zeros are converted to dashes (--)
 	Stats.AddItem(StatsEntry);
 
 	StatsEntry.Label = class'UISoldierHeader'.default.m_strArmorLabel;
 	StatsEntry.Value = GetCurrent(eStat_ArmorMitigation);
+	StatsEntry.ValueStyle = eUITextStyle_Tooltip_AbilityRight; // Prevent that zeros are converted to dashes (--)
 	Stats.AddItem(StatsEntry);
 
 	StatsEntry.Label = class'UISoldierHeader'.default.m_strDodgeLabel;
 	StatsEntry.Value = GetCurrent(eStat_Dodge);
+	StatsEntry.ValueStyle = eUITextStyle_Tooltip_AbilityRight; // Prevent that zeros are converted to dashes (--)
 	Stats.AddItem(StatsEntry);
 
 	StatsEntry.Label = class'XLocalizedData'.default.DefenseLabel;
 	StatsEntry.Value = GetCurrent(eStat_Defense);
+	StatsEntry.ValueStyle = eUITextStyle_Tooltip_AbilityRight; // Prevent that zeros are converted to dashes (--)
 	Stats.AddItem(StatsEntry);
 
 	StatsEntry.Label = class'UISoldierHeader'.default.m_strPsiLabel;
 	StatsEntry.Value = GetCurrent(eStat_PsiOffense);
+	StatsEntry.ValueStyle = eUITextStyle_Tooltip_AbilityRight; // Prevent that zeros are converted to dashes (--)
 	Stats.AddItem(StatsEntry);
 
 	return Stats;
